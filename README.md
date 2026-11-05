@@ -1,4 +1,4 @@
-# edit-mode
+# visual-copy-edit
 
 Click a sentence on a page running under `next dev`, type over it, and the
 source file that produced that sentence is rewritten on disk. A green **Save**
@@ -23,11 +23,7 @@ answer 404 anywhere but a development server.
   [ Save 3 · commit 2 files and push ]   [ Cancel 1 · revert this page ]
 ```
 
-The package and the repository were called `next-edit-mode` until 2.0.0,
-after the dev server that was then its only host; a second host made the
-prefix a misdescription, so the name is now the one the folder, the
-environment variables and the import alias had always used. GitHub redirects
-the old repository URL.
+The tool was called `next-edit-mode` until 2.0.0 and `edit-mode` until 3.0.0; GitHub redirects the old repository URLs.
 
 ## Requirements
 
@@ -52,11 +48,11 @@ compiler it parses with is the host project's.
 **In a Next.js project, the installer does it**, exactly as it always has:
 
 ```sh
-git clone https://github.com/megan-holstein/edit-mode.git ~/tools/edit-mode
-node ~/tools/edit-mode/install.mjs /path/to/your/project
+git clone https://github.com/megan-holstein/visual-copy-edit.git ~/tools/visual-copy-edit
+node ~/tools/visual-copy-edit/install.mjs /path/to/your/project
 ```
 
-That copies the tool's source into a gitignored `.edit-mode/` at the project
+That copies the tool's source into a gitignored `.visual-copy-edit/` at the project
 root, adds the ignore rule, and writes six small committed files — two
 production stand-ins, the three route handlers, and the mount component. It then
 prints the three edits it cannot make for you: two lines in `next.config.ts`,
@@ -79,7 +75,7 @@ three pieces described under [Hosting it in an Electron
 app](#hosting-it-in-an-electron-app):
 
 ```sh
-npm install github:megan-holstein/edit-mode#v2.0.0
+npm install github:megan-holstein/visual-copy-edit#v3.0.0
 ```
 
 ```
@@ -296,12 +292,12 @@ import {
   handlePending,
   handleRevert,
   handleRevertPlan,
-} from "edit-mode/engine";
+} from "visual-copy-edit/engine";
 
 configure({
   projectRoot: app.getAppPath(),
   sourceDirectory: "src",
-  ledgerPath: ".edit-mode/ledger.json",
+  ledgerPath: ".visual-copy-edit/ledger.json",
   push: false,
 });
 
@@ -309,11 +305,11 @@ configure({
 // plainest form of that decision; a development switch of your own serves
 // as well, and the choice belongs to the host rather than to this tool.
 if (!app.isPackaged) {
-  ipcMain.handle("edit-mode:edit", (_event, body) => handleEdit(body));
-  ipcMain.handle("edit-mode:pending", () => handlePending());
-  ipcMain.handle("edit-mode:commit", () => handleCommit());
-  ipcMain.handle("edit-mode:revert-plan", (_event, page) => handleRevertPlan(page));
-  ipcMain.handle("edit-mode:revert", (_event, page) => handleRevert(page));
+  ipcMain.handle("visual-copy-edit:edit", (_event, body) => handleEdit(body));
+  ipcMain.handle("visual-copy-edit:pending", () => handlePending());
+  ipcMain.handle("visual-copy-edit:commit", () => handleCommit());
+  ipcMain.handle("visual-copy-edit:revert-plan", (_event, page) => handleRevertPlan(page));
+  ipcMain.handle("visual-copy-edit:revert", (_event, page) => handleRevert(page));
 }
 ```
 
@@ -328,7 +324,7 @@ in.
 the whole contract:
 
 ```ts
-type EditModeTransport = {
+type VisualCopyEditTransport = {
   edit(body: EditBody): Promise<EditReply>;
   pending(): Promise<PendingReply>;
   commit(): Promise<CommitReply>;
@@ -348,20 +344,20 @@ convenience. IPC is the route Electron already provides.
 // preload.ts
 import { contextBridge, ipcRenderer } from "electron";
 
-contextBridge.exposeInMainWorld("editMode", {
-  edit: (body: unknown) => ipcRenderer.invoke("edit-mode:edit", body),
-  pending: () => ipcRenderer.invoke("edit-mode:pending"),
-  commit: () => ipcRenderer.invoke("edit-mode:commit"),
-  revertPlan: (page: string) => ipcRenderer.invoke("edit-mode:revert-plan", page),
-  revert: (page: string) => ipcRenderer.invoke("edit-mode:revert", page),
+contextBridge.exposeInMainWorld("visualCopyEdit", {
+  edit: (body: unknown) => ipcRenderer.invoke("visual-copy-edit:edit", body),
+  pending: () => ipcRenderer.invoke("visual-copy-edit:pending"),
+  commit: () => ipcRenderer.invoke("visual-copy-edit:commit"),
+  revertPlan: (page: string) => ipcRenderer.invoke("visual-copy-edit:revert-plan", page),
+  revert: (page: string) => ipcRenderer.invoke("visual-copy-edit:revert", page),
 });
 ```
 
 ```tsx
 // wherever the app draws its development furniture
-import { EditModeOverlay } from "edit-mode/overlay";
+import { VisualCopyEditOverlay } from "visual-copy-edit/overlay";
 
-<EditModeOverlay transport={window.editMode} page={currentScreenName} />;
+<VisualCopyEditOverlay transport={window.visualCopyEdit} page={currentScreenName} />;
 ```
 
 **Pass a `page`.** It is the scope Cancel works in: the ledger records which
@@ -394,7 +390,7 @@ ordinary dependency and wires the three pieces above itself.
 
 **Nothing is committed automatically.** Edits pile up as ordinary uncommitted
 changes in the working tree, and each successful one is recorded in a ledger at
-`.next/cache/edit-mode-ledger.json` — gitignored by the framework's own
+`.next/cache/visual-copy-edit-ledger.json` — gitignored by the framework's own
 convention, surviving a dev-server restart, thrown away with everything else
 derived. Each entry carries the file, a count, every page an edit to it was made
 from, and — the part the commit is built out of — the exact substitution each
@@ -436,7 +432,7 @@ Pressing Save:
 6. **Pushes.** Plainly first; only a rejection brings in a fetch and a rebase
    with `--autostash`, so the common case never disturbs anyone. A rebase that
    cannot complete is aborted rather than left in progress, and the reason is
-   shown. Set `EDIT_MODE_PUSH=never` and this step is skipped.
+   shown. Set `VISUAL_COPY_EDIT_PUSH=never` and this step is skipped.
 
 Until version 1.0.2 step 2 was `git commit --only -- <files>`, which commits the
 working-tree content of the named paths. That is file-granular, and the second
@@ -484,14 +480,14 @@ one person's preference never lands in a shared repository.
 
 | Variable | Default | What it does |
 |---|---|---|
-| `EDIT_MODE_SRC` | `src` if it exists, else the project root | The one directory read from and written to. Must match the installer's `--src`. |
-| `EDIT_MODE_PUSH` | `auto` | `never` commits without pushing. |
-| `EDIT_MODE_COMMIT_SUBJECT` | `Copy: edited in place from the browser` | The subject line of the commit Save makes. |
-| `EDIT_MODE_LEDGER` | `.next/cache/edit-mode-ledger.json` | Where the record of uncommitted edits is kept. |
+| `VISUAL_COPY_EDIT_SRC` | `src` if it exists, else the project root | The one directory read from and written to. Must match the installer's `--src`. |
+| `VISUAL_COPY_EDIT_PUSH` | `auto` | `never` commits without pushing. |
+| `VISUAL_COPY_EDIT_COMMIT_SUBJECT` | `Copy: edited in place from the browser` | The subject line of the commit Save makes. |
+| `VISUAL_COPY_EDIT_LEDGER` | `.next/cache/visual-copy-edit-ledger.json` | Where the record of uncommitted edits is kept. |
 
 An embedding host sets the same five values in code instead, with
 `configure({ projectRoot, sourceDirectory, ledgerPath, push, commitSubject })`
-from `edit-mode/engine`. What a host configures outranks the environment,
+from `visual-copy-edit/engine`. What a host configures outranks the environment,
 and the environment outranks the defaults above; a host that never calls
 `configure()` reads exactly what it read before the function existed.
 

@@ -38,10 +38,10 @@ let enteredFrom;
 
 before(() => {
   enteredFrom = process.cwd();
-  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-")));
+  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-")));
   fs.writeFileSync(
     path.join(fixture, "package.json"),
-    '{ "name": "edit-mode-fixture", "private": true }\n'
+    '{ "name": "visual-copy-edit-fixture", "private": true }\n'
   );
   fs.mkdirSync(path.join(fixture, "node_modules"), { recursive: true });
   fs.symlinkSync(
@@ -351,15 +351,15 @@ function inGit(where, args, allowFailure = false) {
 
 /** A repository with a source directory, a compiler, and no commits yet. */
 function makeRepo() {
-  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-git-")));
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-git-")));
   gitRepos.push(dir);
   inGit(dir, ["init", "-q", "."]);
   inGit(dir, ["config", "user.email", "nobody@example.invalid"]);
-  inGit(dir, ["config", "user.name", "Edit Mode Test"]);
+  inGit(dir, ["config", "user.name", "Visual Copy Edit Test"]);
   inGit(dir, ["config", "commit.gpgsign", "false"]);
   fs.writeFileSync(
     path.join(dir, "package.json"),
-    '{ "name": "edit-mode-git-fixture", "private": true }\n'
+    '{ "name": "visual-copy-edit-git-fixture", "private": true }\n'
   );
   fs.writeFileSync(path.join(dir, ".gitignore"), "node_modules\n");
   fs.mkdirSync(path.join(dir, "node_modules"), { recursive: true });
@@ -400,17 +400,17 @@ async function inRepo(dir, body) {
      kept between calls, so a test can read the ledger back after a save. */
   const ledger = path.join(dir, "..", `${path.basename(dir)}-ledger.json`);
   if (!gitLedgers.includes(ledger)) gitLedgers.push(ledger);
-  const push = process.env.EDIT_MODE_PUSH;
+  const push = process.env.VISUAL_COPY_EDIT_PUSH;
   process.chdir(dir);
-  process.env.EDIT_MODE_LEDGER = ledger;
-  process.env.EDIT_MODE_PUSH = "never";
+  process.env.VISUAL_COPY_EDIT_LEDGER = ledger;
+  process.env.VISUAL_COPY_EDIT_PUSH = "never";
   try {
     return await body();
   } finally {
     process.chdir(from);
-    delete process.env.EDIT_MODE_LEDGER;
-    if (push === undefined) delete process.env.EDIT_MODE_PUSH;
-    else process.env.EDIT_MODE_PUSH = push;
+    delete process.env.VISUAL_COPY_EDIT_LEDGER;
+    if (push === undefined) delete process.env.VISUAL_COPY_EDIT_PUSH;
+    else process.env.VISUAL_COPY_EDIT_PUSH = push;
   }
 }
 
@@ -684,7 +684,7 @@ test("an entry with nothing recorded about its edits is refused by name", async 
   const result = await inRepo(dir, async () => {
     /* A ledger as 1.0.1 wrote them: a count, and no record of what changed. */
     fs.writeFileSync(
-      process.env.EDIT_MODE_LEDGER,
+      process.env.VISUAL_COPY_EDIT_LEDGER,
       JSON.stringify([{ file: "src/content/old.ts", edits: 1, pages: ["/"] }], null, 2)
     );
     return commitEdits();

@@ -13,7 +13,7 @@
  * Next.js project by the framework's own convention, survives a dev-server
  * restart, and is thrown away by the same `rm -rf .next` that throws away
  * everything else derived. It is never committed and never read by anything but
- * this tool. `EDIT_MODE_LEDGER` moves it.
+ * this tool. `VISUAL_COPY_EDIT_LEDGER` moves it.
  *
  * WHAT KEEPS IT HONEST. A file whose edits have since been undone by hand is
  * dropped on read — `pendingEdits` asks git whether each remembered file still

@@ -38,7 +38,7 @@
  * ordinary uncommitted changes in the working tree; the button commits exactly
  * the substitutions this tool made — rebuilt on top of the last commit, so
  * nothing anybody else has typed in those files rides along — and pushes them
- * unless `EDIT_MODE_PUSH` says not to. An editor that committed on every
+ * unless `VISUAL_COPY_EDIT_PUSH` says not to. An editor that committed on every
  * keystroke would fill a history with typing.
  *
  * SAVE AND CANCEL ARE BOTH PRESENT THE MOMENT THE MODE IS ON, and that is a
@@ -78,7 +78,7 @@ import type {
  * message to an Electron main process — the values on either side are the same,
  * so this file never learns which host it is running in.
  */
-export type EditModeTransport = {
+export type VisualCopyEditTransport = {
   edit(body: EditBody): Promise<EditReply>;
   pending(): Promise<PendingReply>;
   commit(): Promise<CommitReply>;
@@ -103,7 +103,7 @@ export function fetchTransport(endpoints: {
   editEndpoint: string;
   commitEndpoint: string;
   revertEndpoint: string;
-}): EditModeTransport {
+}): VisualCopyEditTransport {
   const { editEndpoint, commitEndpoint, revertEndpoint } = endpoints;
   return {
     async edit(body) {
@@ -149,13 +149,13 @@ export function fetchTransport(endpoints: {
   };
 }
 
-export type EditModeProps = {
+export type VisualCopyEditProps = {
   /**
    * How to reach the engine. Left out, the overlay talks to the three endpoints
    * below over `fetch`, which is what a Next.js project wants and what every
    * project had before there was a choice.
    */
-  transport?: EditModeTransport;
+  transport?: VisualCopyEditTransport;
   /**
    * What to call the page an edit was made from, which is the scope Cancel
    * works in. A Next.js host passes `usePathname()`, so the counts follow a
@@ -211,7 +211,7 @@ type Status =
   | { kind: "error"; message: string; tone: Tone }
   | { kind: "choose"; candidates: Candidate[] };
 
-const STORAGE_KEY = "edit-mode:on";
+const STORAGE_KEY = "visual-copy-edit:on";
 const HOVER_ATTRIBUTE = "data-em-hover";
 const EDITING_ATTRIBUTE = "data-em-active";
 
@@ -421,13 +421,13 @@ function panelTone(status: Status): Tone | "progress" | "done" {
   }
 }
 
-export function EditModeOverlay({
+export function VisualCopyEditOverlay({
   transport,
   page,
   editEndpoint = "/api/dev/edit-copy",
   commitEndpoint = "/api/dev/commit-copy",
   revertEndpoint = "/api/dev/revert-copy",
-}: EditModeProps = {}) {
+}: VisualCopyEditProps = {}) {
   const active = useSyncExternalStore(subscribeMode, readMode, modeOffOnServer);
   /* Memoised, because an unmemoised default would be a new object on every
      render and the effect below would re-read the ledger on every one of them. */

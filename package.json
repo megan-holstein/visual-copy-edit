@@ -1,6 +1,6 @@
 {
-  "name": "edit-mode",
-  "version": "2.0.0",
+  "name": "visual-copy-edit",
+  "version": "3.0.0",
   "description": "Development-only inline copy editing for Next.js dev servers and Electron apps: click a sentence on the page, type over it, and the source file that produced it is rewritten.",
   "keywords": [
     "nextjs",
@@ -17,13 +17,13 @@
   "author": "Holstein Creations LLC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/megan-holstein/edit-mode.git"
+    "url": "git+https://github.com/megan-holstein/visual-copy-edit.git"
   },
-  "homepage": "https://github.com/megan-holstein/edit-mode#readme",
-  "bugs": "https://github.com/megan-holstein/edit-mode/issues",
+  "homepage": "https://github.com/megan-holstein/visual-copy-edit#readme",
+  "bugs": "https://github.com/megan-holstein/visual-copy-edit/issues",
   "type": "module",
   "bin": {
-    "edit-mode": "./install.mjs"
+    "visual-copy-edit": "./install.mjs"
   },
   "exports": {
     "./overlay": "./src/overlay.tsx",

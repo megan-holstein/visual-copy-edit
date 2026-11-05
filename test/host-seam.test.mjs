@@ -33,10 +33,10 @@ let enteredFrom;
 
 before(() => {
   enteredFrom = process.cwd();
-  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-seam-")));
+  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-seam-")));
   fs.writeFileSync(
     path.join(fixture, "package.json"),
-    '{ "name": "edit-mode-seam-fixture", "private": true }\n'
+    '{ "name": "visual-copy-edit-seam-fixture", "private": true }\n'
   );
   fs.mkdirSync(path.join(fixture, "src"), { recursive: true });
   fs.writeFileSync(
@@ -68,7 +68,7 @@ test("a project with no app/ narrows nothing rather than failing", () => {
 });
 
 test("a project with no source directory at all narrows nothing either", () => {
-  const bare = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-bare-")));
+  const bare = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-bare-")));
   fs.writeFileSync(path.join(bare, "package.json"), '{ "name": "bare", "private": true }\n');
   const home = process.cwd();
   try {

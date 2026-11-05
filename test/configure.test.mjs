@@ -31,15 +31,15 @@ let enteredFrom;
 
 before(() => {
   enteredFrom = process.cwd();
-  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-config-")));
-  elsewhere = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "edit-mode-host-")));
+  fixture = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-config-")));
+  elsewhere = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "visual-copy-edit-host-")));
   fs.mkdirSync(path.join(fixture, "src"), { recursive: true });
   fs.mkdirSync(path.join(elsewhere, "app"), { recursive: true });
   for (const name of [
-    "EDIT_MODE_SRC",
-    "EDIT_MODE_PUSH",
-    "EDIT_MODE_COMMIT_SUBJECT",
-    "EDIT_MODE_LEDGER",
+    "VISUAL_COPY_EDIT_SRC",
+    "VISUAL_COPY_EDIT_PUSH",
+    "VISUAL_COPY_EDIT_COMMIT_SUBJECT",
+    "VISUAL_COPY_EDIT_LEDGER",
   ]) {
     delete process.env[name];
   }
@@ -60,15 +60,15 @@ test("with nothing set, every value is the Next.js default", () => {
   assert.equal(config.commitSubject(), DEFAULT_SUBJECT);
   assert.equal(
     config.ledgerPath(),
-    path.join(fixture, ".next", "cache", "edit-mode-ledger.json")
+    path.join(fixture, ".next", "cache", "visual-copy-edit-ledger.json")
   );
 });
 
 test("the environment outranks the defaults", () => {
-  process.env.EDIT_MODE_SRC = "app";
-  process.env.EDIT_MODE_PUSH = "never";
-  process.env.EDIT_MODE_COMMIT_SUBJECT = "Copy: from the environment";
-  process.env.EDIT_MODE_LEDGER = ".cache/env-ledger.json";
+  process.env.VISUAL_COPY_EDIT_SRC = "app";
+  process.env.VISUAL_COPY_EDIT_PUSH = "never";
+  process.env.VISUAL_COPY_EDIT_COMMIT_SUBJECT = "Copy: from the environment";
+  process.env.VISUAL_COPY_EDIT_LEDGER = ".cache/env-ledger.json";
 
   assert.equal(config.sourceDirectory(), path.join(fixture, "app"));
   assert.equal(config.pushAfterCommit(), false);
@@ -95,7 +95,7 @@ test("what the host configures outranks the environment", () => {
   config.configure({
     projectRoot: elsewhere,
     sourceDirectory: "source",
-    ledgerPath: ".edit-mode/ledger.json",
+    ledgerPath: ".visual-copy-edit/ledger.json",
     push: true,
     commitSubject: "Copy: edited in the app",
   });
@@ -106,7 +106,7 @@ test("what the host configures outranks the environment", () => {
   assert.equal(config.sourcePrefix(), "source/");
   assert.equal(config.pushAfterCommit(), true);
   assert.equal(config.commitSubject(), "Copy: edited in the app");
-  assert.equal(config.ledgerPath(), path.join(elsewhere, ".edit-mode", "ledger.json"));
+  assert.equal(config.ledgerPath(), path.join(elsewhere, ".visual-copy-edit", "ledger.json"));
 });
 
 test("absolute paths are taken as they are given", () => {

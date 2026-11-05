@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Mount edit-mode in a Next.js project.
+ * Mount visual-copy-edit in a Next.js project.
  *
- *   node path/to/edit-mode/install.mjs [project-dir] [--src <dir>]
+ *   node path/to/visual-copy-edit/install.mjs [project-dir] [--src <dir>]
  *
  * Run it again any time the tool changes; it is idempotent, and re-running it
  * is how a project picks up a new version.
@@ -12,7 +12,7 @@
  * is rejected outright ("points out of the filesystem root") and an absolute
  * `resolveAlias` target is read as a server-relative path and never found. Both
  * were tried. So the tool's source has to sit physically inside the project it
- * serves, and the copy lands in a gitignored `.edit-mode/` at the project root:
+ * serves, and the copy lands in a gitignored `.visual-copy-edit/` at the project root:
  * inside the root so the bundler will take it, outside the source directory so
  * the engine never searches its own source for the sentence it is looking for,
  * and gitignored so it is never committed to a project it is not part of.
@@ -32,7 +32,7 @@ const TOOL = path.dirname(fileURLToPath(import.meta.url));
 /* ------------------------------------------------------------- arguments */
 const argv = process.argv.slice(2);
 if (argv.includes("--help") || argv.includes("-h")) {
-  console.log(`edit-mode installer
+  console.log(`visual-copy-edit installer
 
   install [project-dir] [--src <dir>]
 
@@ -40,7 +40,7 @@ if (argv.includes("--help") || argv.includes("-h")) {
   --src <dir>   the project's source directory, relative to the project root.
                 Detected automatically: "src" where that directory exists,
                 otherwise the project root. Whatever is chosen here must match
-                EDIT_MODE_SRC if the project sets it.
+                VISUAL_COPY_EDIT_SRC if the project sets it.
 `);
   process.exit(0);
 }
@@ -78,7 +78,7 @@ if (!isDirectory(path.join(project, srcRelative))) {
 }
 if (!isDirectory(inSrc("app"))) {
   console.error(
-    `No ${relative("app")}/ in ${project} — edit-mode needs the Next.js App Router.\n` +
+    `No ${relative("app")}/ in ${project} — visual-copy-edit needs the Next.js App Router.\n` +
       `If the source lives somewhere else, pass --src <dir>.`
   );
   process.exit(1);
@@ -88,27 +88,27 @@ console.log(`project ${project}`);
 console.log(`source  ${srcRelative === "." ? "(project root)" : `${srcRelative}/`}`);
 
 /* ---------------------------------------------- 1. the tool's own source */
-const target = path.join(project, ".edit-mode");
+const target = path.join(project, ".visual-copy-edit");
 fs.rmSync(target, { recursive: true, force: true });
 fs.cpSync(path.join(TOOL, "src"), target, { recursive: true });
-console.log(`copied  .edit-mode/  (${fs.readdirSync(target).length} files)`);
+console.log(`copied  .visual-copy-edit/  (${fs.readdirSync(target).length} files)`);
 
 /* ------------------------------------------------------------ 2. ignore */
 const ignorePath = path.join(project, ".gitignore");
 const ignore = fs.existsSync(ignorePath) ? fs.readFileSync(ignorePath, "utf8") : "";
-if (!/^\/?\.edit-mode\/?$/m.test(ignore)) {
+if (!/^\/?\.visual-copy-edit\/?$/m.test(ignore)) {
   fs.writeFileSync(
     ignorePath,
-    `${ignore.replace(/\s*$/, "")}\n\n# edit-mode (a development-only tool, installed with its install.mjs)\n/.edit-mode/\n`
+    `${ignore.replace(/\s*$/, "")}\n\n# visual-copy-edit (a development-only tool, installed with its install.mjs)\n/.visual-copy-edit/\n`
   );
-  console.log("added   /.edit-mode/ to .gitignore");
+  console.log("added   /.visual-copy-edit/ to .gitignore");
 } else {
-  console.log("ok      .gitignore already ignores /.edit-mode/");
+  console.log("ok      .gitignore already ignores /.visual-copy-edit/");
 }
 
 /* --------------------------------------- 3. the production stand-ins */
 const routeFile = (comment, factory) => `${comment}
-import { ${factory} } from "#edit-mode/routes";
+import { ${factory} } from "#visual-copy-edit/routes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -119,16 +119,16 @@ export const POST = handlers.POST;
 `;
 
 const stubs = {
-  [relative("dev/edit-mode-absent.tsx")]: `"use client";
+  [relative("dev/visual-copy-edit-absent.tsx")]: `"use client";
 
 /**
- * The production stand-in for the edit-mode overlay, and the reason a build
+ * The production stand-in for the visual-copy-edit overlay, and the reason a build
  * works on a machine that does not have the tool. \`next.config.ts\` aliases
- * \`#edit-mode/overlay\` here whenever the tool is absent or the build is not a
+ * \`#visual-copy-edit/overlay\` here whenever the tool is absent or the build is not a
  * development one, and \`tsconfig.json\` types the specifier against this file
  * always — so the type-checker never needs the tool either.
  */
-export type EditModeProps = {
+export type VisualCopyEditProps = {
   transport?: unknown;
   page?: string;
   editEndpoint?: string;
@@ -139,13 +139,13 @@ export type EditModeProps = {
 /* The stand-in takes the real overlay's props so a host that passes them still
    type-checks against this file. It renders nothing either way. */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function EditModeOverlay(_props: EditModeProps = {}) {
+export function VisualCopyEditOverlay(_props: VisualCopyEditProps = {}) {
   return null;
 }
 `,
-  [relative("dev/edit-mode-routes-absent.ts")]: `/**
- * The production stand-in for the edit-mode route factories: handlers that are
- * 404 and nothing else. See \`edit-mode-absent.tsx\` beside this file.
+  [relative("dev/visual-copy-edit-routes-absent.ts")]: `/**
+ * The production stand-in for the visual-copy-edit route factories: handlers that are
+ * 404 and nothing else. See \`visual-copy-edit-absent.tsx\` beside this file.
  */
 const notFound = async () => new Response(null, { status: 404 });
 const dead = () => ({ GET: notFound, POST: notFound });
@@ -208,7 +208,7 @@ for (const [rel, contents] of Object.entries(stubs)) {
 /* The mount component is written ONCE and never overwritten, because it is the
    one file here a project has a reason to edit — it is where the endpoint props
    go if the routes are mounted somewhere other than /api/dev. */
-const mountRelative = relative("components/dev/edit-mode.tsx");
+const mountRelative = relative("components/dev/visual-copy-edit.tsx");
 const mountFile = path.join(project, mountRelative);
 if (fs.existsSync(mountFile)) {
   console.log(`kept    ${mountRelative} (yours; not overwritten)`);
@@ -244,10 +244,10 @@ import { usePathname } from "next/navigation";
  */
 const Overlay =
   process.env.NODE_ENV === "development"
-    ? dynamic(() => import("#edit-mode/overlay").then((m) => m.EditModeOverlay))
+    ? dynamic(() => import("#visual-copy-edit/overlay").then((m) => m.VisualCopyEditOverlay))
     : null;
 
-export function DevEditMode() {
+export function DevVisualCopyEdit() {
   /* The page the overlay scopes Cancel to, and the value that makes the two
      counts follow a client navigation — which does not reload, so the address
      read once at mount would go stale the first time you click the nav. */
@@ -261,11 +261,11 @@ export function DevEditMode() {
 }
 
 /* ------------------------------------------------- 4. the three hand edits */
-const overlayAbsent = `./${relative("dev/edit-mode-absent.tsx")}`;
-const routesAbsent = `./${relative("dev/edit-mode-routes-absent.ts")}`;
+const overlayAbsent = `./${relative("dev/visual-copy-edit-absent.tsx")}`;
+const routesAbsent = `./${relative("dev/visual-copy-edit-routes-absent.ts")}`;
 /* The layout sits one level inside the source directory, so this relative path
    is right in both layouts. A project with an alias may prefer that spelling. */
-const importPath = "../components/dev/edit-mode";
+const importPath = "../components/dev/visual-copy-edit";
 
 console.log(`
 Three edits left, and they are the whole of the wiring.
@@ -276,10 +276,10 @@ Three edits left, and they are the whole of the wiring.
      import fs from "node:fs";
      import path from "node:path";
 
-     const editMode = (name: string, absent: string) => {
-       const installed = path.join(process.cwd(), ".edit-mode", name);
+     const visualCopyEdit = (name: string, absent: string) => {
+       const installed = path.join(process.cwd(), ".visual-copy-edit", name);
        return process.env.NODE_ENV === "development" && fs.existsSync(installed)
-         ? \`./.edit-mode/\${name}\`
+         ? \`./.visual-copy-edit/\${name}\`
          : absent;
      };
 
@@ -287,8 +287,8 @@ Three edits left, and they are the whole of the wiring.
 
      turbopack: {
        resolveAlias: {
-         "#edit-mode/overlay": editMode("overlay.tsx", "${overlayAbsent}"),
-         "#edit-mode/routes": editMode("routes.ts", "${routesAbsent}"),
+         "#visual-copy-edit/overlay": visualCopyEdit("overlay.tsx", "${overlayAbsent}"),
+         "#visual-copy-edit/routes": visualCopyEdit("routes.ts", "${routesAbsent}"),
        },
      },
 
@@ -296,14 +296,14 @@ Three edits left, and they are the whole of the wiring.
    type-checker never needs the tool:
 
      "paths": {
-       "#edit-mode/overlay": ["${overlayAbsent}"],
-       "#edit-mode/routes": ["${routesAbsent}"]
+       "#visual-copy-edit/overlay": ["${overlayAbsent}"],
+       "#visual-copy-edit/routes": ["${routesAbsent}"]
      }
 
 3. Render the mount at the end of <body> in ${relative("app/layout.tsx")}:
 
-     import { DevEditMode } from "${importPath}";   // or your own alias
+     import { DevVisualCopyEdit } from "${importPath}";   // or your own alias
      ...
-     <DevEditMode />
+     <DevVisualCopyEdit />
 
 Restart the dev server once after the first install.`);

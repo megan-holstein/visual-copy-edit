@@ -69,7 +69,7 @@ export function projectRoot(): string {
 
 /**
  * The one directory this tool reads from and writes to. `configure()` sets it
- * explicitly, then `EDIT_MODE_SRC` does; otherwise it is `src` in a project
+ * explicitly, then `VISUAL_COPY_EDIT_SRC` does; otherwise it is `src` in a project
  * that has one, and the project root in a project that keeps `app/` at the top
  * level. Both layouts are ordinary Next.js and this tool serves either.
  *
@@ -80,7 +80,7 @@ export function projectRoot(): string {
 export function sourceDirectory(): string {
   const set = configured?.sourceDirectory?.trim();
   if (set) return path.resolve(projectRoot(), set);
-  const fromEnvironment = process.env.EDIT_MODE_SRC?.trim();
+  const fromEnvironment = process.env.VISUAL_COPY_EDIT_SRC?.trim();
   if (fromEnvironment) return path.resolve(projectRoot(), fromEnvironment);
   const src = path.join(projectRoot(), "src");
   try {
@@ -96,20 +96,20 @@ export function sourceDirectory(): string {
  *
  * Pushing is the default, because an unpushed commit is an unbacked-up commit
  * and the button's whole promise is that the words are safe. `push: false`, or
- * `EDIT_MODE_PUSH=never`, commits and stops, which is the right setting on a
+ * `VISUAL_COPY_EDIT_PUSH=never`, commits and stops, which is the right setting on a
  * branch that is not meant to leave the machine, or where a push triggers a
  * deployment.
  */
 export function pushAfterCommit(): boolean {
   if (configured && configured.push !== undefined) return configured.push;
-  return (process.env.EDIT_MODE_PUSH ?? "auto").trim().toLowerCase() !== "never";
+  return (process.env.VISUAL_COPY_EDIT_PUSH ?? "auto").trim().toLowerCase() !== "never";
 }
 
 /** The subject line of the commit Save makes. */
 export function commitSubject(): string {
   return (
     configured?.commitSubject?.trim() ||
-    process.env.EDIT_MODE_COMMIT_SUBJECT?.trim() ||
+    process.env.VISUAL_COPY_EDIT_COMMIT_SUBJECT?.trim() ||
     "Copy: edited in place from the browser"
   );
 }
@@ -125,9 +125,9 @@ export function commitSubject(): string {
 export function ledgerPath(): string {
   const set = configured?.ledgerPath?.trim();
   if (set) return path.resolve(projectRoot(), set);
-  const fromEnvironment = process.env.EDIT_MODE_LEDGER?.trim();
+  const fromEnvironment = process.env.VISUAL_COPY_EDIT_LEDGER?.trim();
   if (fromEnvironment) return path.resolve(projectRoot(), fromEnvironment);
-  return path.join(projectRoot(), ".next", "cache", "edit-mode-ledger.json");
+  return path.join(projectRoot(), ".next", "cache", "visual-copy-edit-ledger.json");
 }
 
 /**

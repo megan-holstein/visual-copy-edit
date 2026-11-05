@@ -55,7 +55,7 @@
  * rejection brings in a rebase, so the common case never touches anybody else's
  * work. A rebase that cannot complete is aborted rather than left in progress,
  * because the person who clicked the button is not the person who should be
- * resolving a conflict in a detached rebase. Set `EDIT_MODE_PUSH=never` and the
+ * resolving a conflict in a detached rebase. Set `VISUAL_COPY_EDIT_PUSH=never` and the
  * button commits and stops.
  *
  * WHAT IT DELIBERATELY DOES NOT DO is claim authorship. The words in the commit
@@ -304,7 +304,7 @@ export async function commitEdits(): Promise<CommitResult> {
   // for this process and removed whatever happens below.
   const indexFile = path.join(
     os.tmpdir(),
-    `edit-mode-index-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    `visual-copy-edit-index-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   );
   const scratch = { GIT_INDEX_FILE: indexFile };
 
@@ -436,7 +436,7 @@ export async function commitEdits(): Promise<CommitResult> {
   const landedNote = push.ok
     ? wanted
       ? `Saved as ${hash} and pushed.`
-      : `Saved as ${hash}. Not pushed — EDIT_MODE_PUSH is set to never.`
+      : `Saved as ${hash}. Not pushed — VISUAL_COPY_EDIT_PUSH is set to never.`
     : `Saved as ${hash}, but the push failed: ${push.reason ?? "no reason given."} Your work is committed; push it yourself once you have sorted out why.`;
 
   return {

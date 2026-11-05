@@ -74,7 +74,7 @@ export type RevertPlanReply = { plan: RevertPlan } | ErrorReply;
 export type RevertReply = (RevertResult & { pending: LedgerEntry[] }) | ErrorReply;
 
 /** The five things a host can ask for, as one shape a transport can implement. */
-export type EditModeEngine = {
+export type VisualCopyEditEngine = {
   edit(body: EditBody): Promise<EditReply>;
   pending(): Promise<PendingReply>;
   commit(): Promise<CommitReply>;

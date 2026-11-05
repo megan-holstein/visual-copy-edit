@@ -1,5 +1,28 @@
 # Changelog
 
+## 3.0.0
+
+Renames the package and the repository again. The tool is `visual-copy-edit`, and the repository, the package, the installed folder, the environment variables and the import alias now all say so. This is a breaking change: no old name keeps working, and there is no compatibility shim or fallback.
+
+- **Breaking: the package, the repository and the executable.** `edit-mode` becomes `visual-copy-edit` as the package `name`, the `bin` key, the GitHub repository (`megan-holstein/visual-copy-edit`) and the dependency spec (`github:megan-holstein/visual-copy-edit#v3.0.0`). GitHub redirects the old repository URL, so an existing dependency on `edit-mode` goes on resolving until it is updated.
+- **Breaking: the installed folder.** `.edit-mode/` becomes `.visual-copy-edit/`, and so does the `.gitignore` rule the installer writes.
+- **Breaking: the import alias.** `#edit-mode/overlay` and `#edit-mode/routes` become `#visual-copy-edit/overlay` and `#visual-copy-edit/routes`. Package imports change the same way: `edit-mode/engine` becomes `visual-copy-edit/engine`, and `edit-mode/overlay` becomes `visual-copy-edit/overlay`.
+- **Breaking: the environment variables.** `EDIT_MODE_SRC`, `EDIT_MODE_PUSH`, `EDIT_MODE_COMMIT_SUBJECT` and `EDIT_MODE_LEDGER` become `VISUAL_COPY_EDIT_SRC`, `VISUAL_COPY_EDIT_PUSH`, `VISUAL_COPY_EDIT_COMMIT_SUBJECT` and `VISUAL_COPY_EDIT_LEDGER`.
+- **Breaking: the ledger path.** The default `.next/cache/edit-mode-ledger.json` becomes `.next/cache/visual-copy-edit-ledger.json`, and an Electron host's `.edit-mode/ledger.json` becomes `.visual-copy-edit/ledger.json`. An unsaved edit recorded under the old path is not found under the new one.
+- **Breaking: the exported identifiers.** `EditModeOverlay` becomes `VisualCopyEditOverlay`, `EditModeProps` becomes `VisualCopyEditProps`, `EditModeTransport` becomes `VisualCopyEditTransport`, and `EditModeEngine` becomes `VisualCopyEditEngine`.
+- **Breaking: the files the installer generates in a host.** `components/dev/edit-mode.tsx` becomes `components/dev/visual-copy-edit.tsx` and exports `DevVisualCopyEdit` in place of `DevEditMode`; `dev/edit-mode-absent.tsx` becomes `dev/visual-copy-edit-absent.tsx`; `dev/edit-mode-routes-absent.ts` becomes `dev/visual-copy-edit-routes-absent.ts`.
+- **Breaking: the browser key and the Electron bridge.** The localStorage key `edit-mode:on` becomes `visual-copy-edit:on`, which switches the overlay off once for a browser that had it on. The documented Electron IPC channels `edit-mode:*` become `visual-copy-edit:*`, and the documented `window.editMode` bridge becomes `window.visualCopyEdit`.
+- **Nothing else changed.** The engine, the routes, the overlay's behaviour, the commit, the ledger format and the security model are what they were in 2.0.0.
+
+### Migrating a host
+
+1. Update the dependency spec to `github:megan-holstein/visual-copy-edit#v3.0.0`, or pull the new clone and re-run its installer.
+2. Re-run the installer (`node path/to/visual-copy-edit/install.mjs`). It writes `.visual-copy-edit/` and the renamed stand-ins and mount component.
+3. Delete the old `.edit-mode/` folder, the old `components/dev/edit-mode.tsx`, and the old `dev/edit-mode-absent.tsx` and `dev/edit-mode-routes-absent.ts`, and remove the old `/.edit-mode/` line from `.gitignore`.
+4. Rename the environment variables to `VISUAL_COPY_EDIT_*`.
+5. Update the `#edit-mode/*` import alias in `package.json` `imports` and in `tsconfig.json` `paths` to `#visual-copy-edit/*`, and change `DevEditMode` to `DevVisualCopyEdit` where the layout mounts it.
+6. In an Electron host, rename the IPC channels, the bridge name and the imported identifiers.
+
 ## 2.0.0
 
 Renames the package and the repository. The tool is `edit-mode`.
